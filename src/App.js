@@ -90,10 +90,12 @@ class App extends Component {
   };
 
   scrollDown = () => {
-    window.scrollTo({
-      top: document.documentElement.scrollTop + window.innerHeight,
-      behavior: 'smooth',
-    });
+    if (this.state.currentPage > 2) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   };
 
   handleImageClick = ({ target }) => {
@@ -117,7 +119,7 @@ class App extends Component {
 
   render() {
     const { hits, isLoading, showModal, url, tag } = this.state;
-    const shouldRenderLoadMoreButton = hits.length > 0 && !isLoading;
+    const shouldRenderLoadMoreButton = hits.length > 0;
 
     return (
       <div className={styles.Container}>
@@ -127,7 +129,7 @@ class App extends Component {
 
         {isLoading && <GalleryLoader />}
 
-        {shouldRenderLoadMoreButton && <Button onClick={this.fetchHits} />}
+        {shouldRenderLoadMoreButton > 0 && <Button onClick={this.fetchHits} />}
 
         {showModal && (
           <Modal onClose={this.toggleModal} onClick={this.handleImageClick}>
