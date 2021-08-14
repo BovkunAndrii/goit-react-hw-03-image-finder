@@ -119,7 +119,7 @@ class App extends Component {
 
   render() {
     const { hits, isLoading, showModal, url, tag } = this.state;
-    const shouldRenderLoadMoreButton = hits.length > 0;
+    const shouldRenderLoadMoreButton = hits.length > 1 && !isLoading;
 
     return (
       <div className={styles.Container}>
