@@ -29,6 +29,15 @@ class App extends Component {
     if (prevState.searchQuery !== this.state.searchQuery) {
       this.fetchHits();
     }
+    if (
+      this.state.currentPage !== 2 &&
+      prevState.currentPage !== this.state.currentPage
+    ) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }
 
   onChangeQuery = query => {
@@ -46,56 +55,24 @@ class App extends Component {
     const { searchQuery, currentPage } = this.state;
     const options = { searchQuery, currentPage };
     this.setState({ isLoading: true });
-    newsApi
-      .fetchHits(options)
-      .then(hits => {
-        this.setState(prevState => ({
-          hits: [...prevState.hits, ...hits],
-          currentPage: prevState.currentPage + 1,
-          currentPageImages: [...hits],
-        }));
-        if (hits.length === 0) {
-          this.setState({
-            error: 'Nothing was find by your query. Try again.',
-          });
-        }
-      })
-      .then(() => {
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          behavior: 'smooth',
-        });
-      })
-      .catch(error => this.setState({ error }))
-      .finally(() => this.setState({ isLoading: false }));
-  };
-
-  fetchHits = () => {
-    const { searchQuery, currentPage } = this.state;
-    const options = { searchQuery, currentPage };
-
-    this.setState({ isLoading: true });
-
-    newsApi
-      .fetchHits(options)
-      .then(hits => {
-        this.setState(prevState => ({
-          hits: [...prevState.hits, ...hits],
-          currentPage: prevState.currentPage + 1,
-        }));
-        this.scrollDown();
-      })
-      .catch(error => this.setState({ error }))
-      .finally(() => this.setState({ isLoading: false }));
-  };
-
-  scrollDown = () => {
-    if (this.state.currentPage > 2) {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
+    setTimeout(() => {
+      newsApi
+        .fetchHits(options)
+        .then(hits => {
+          this.setState(prevState => ({
+            hits: [...prevState.hits, ...hits],
+            currentPage: prevState.currentPage + 1,
+            currentPageImages: [...hits],
+          }));
+          if (hits.length === 0) {
+            this.setState({
+              error: 'Nothing was find by your query. Try again.',
+            });
+          }
+        })
+        .catch(error => this.setState({ error }))
+        .finally(() => this.setState({ isLoading: false }));
+    }, 500);
   };
 
   handleImageClick = ({ target }) => {
@@ -119,8 +96,7 @@ class App extends Component {
 
   render() {
     const { hits, isLoading, showModal, url, tag } = this.state;
-    const shouldRenderLoadMoreButton = hits.length > 1 && !isLoading;
-
+    const shouldRenderLoadMoreButton = hits.length;
     return (
       <div className={styles.Container}>
         <Searchbar onSubmit={this.onChangeQuery} />
@@ -129,7 +105,7 @@ class App extends Component {
 
         {isLoading && <GalleryLoader />}
 
-        {shouldRenderLoadMoreButton > 0 && <Button onClick={this.fetchHits} />}
+        {shouldRenderLoadMoreButton > 11 && <Button onClick={this.fetchHits} />}
 
         {showModal && (
           <Modal onClose={this.toggleModal} onClick={this.handleImageClick}>
