@@ -1,120 +1,107 @@
-// Модули
-import React, { Component } from 'react';
-
-// Компоненты
-import * as newsApi from './services/news-api';
-import Searchbar from './components/Searchbar';
-import ImageGallery from './components/ImageGallery';
-import Button from './components/Button';
-import Modal from './components/Modal';
-import GalleryLoader from './components/Loader';
-
-// Стили
-import styles from './App.module.css';
+import React, { Component } from "react";
+import S from "./App.module.css";
+import PropTypes from "prop-types";
+import ApiService from "./services/ApiService";
+import SearchForm from "./components/Searchbar";
+import ImageGallery from "./components/ImageGallery";
+import Button from "./components/Button";
+import Loader from "./components/Loader";
+import Modal from "./components/Modal";
 
 class App extends Component {
   state = {
-    hits: [],
-    currentPage: 1,
-    currentPageImages: [],
-    searchQuery: '',
-    isLoading: false,
-    error: null,
+    pictures: [],
+    page: 1,
+    query: "",
+    largeImage: "",
+    imgTags: "",
+    error: "",
     showModal: false,
-    url: '',
-    tag: '',
+    isLoading: false,
   };
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.searchQuery !== this.state.searchQuery) {
-      this.fetchHits();
+    if (prevState.query !== this.state.query) {
+      this.fetchPictures();
     }
-    if (
-      this.state.currentPage !== 2 &&
-      prevState.currentPage !== this.state.currentPage
-    ) {
+    if (this.state.page !== 2 && prevState.page !== this.state.page) {
       window.scrollTo({
         top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   }
 
-  onChangeQuery = query => {
-    this.setState({
-      searchQuery: query,
-      currentPage: 1,
-      hits: [],
-      error: null,
-      url: '',
-      tag: '',
-    });
-  };
-
-  fetchHits = () => {
-    const { searchQuery, currentPage } = this.state;
-    const options = { searchQuery, currentPage };
-    this.setState({ isLoading: true });
-    setTimeout(() => {
-      newsApi
-        .fetchHits(options)
-        .then(hits => {
-          this.setState(prevState => ({
-            hits: [...prevState.hits, ...hits],
-            currentPage: prevState.currentPage + 1,
-            currentPageImages: [...hits],
-          }));
-          if (hits.length === 0) {
-            this.setState({
-              error: 'Nothing was find by your query. Try again.',
-            });
-          }
-        })
-        .catch(error => this.setState({ error }))
-        .finally(() => this.setState({ isLoading: false }));
-    }, 500);
-  };
-
-  handleImageClick = ({ target }) => {
-    if (target.nodeName !== 'IMG') {
-      return;
-    }
-    const { url } = target.dataset;
-    const tag = target.alt;
-    this.setState({
-      url,
-      tag,
-    });
-    this.toggleModal();
-  };
-
   toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
+    this.setState((state) => ({
+      showModal: !state.showModal,
     }));
   };
 
+  bigImage = (largeImage = "") => {
+    this.setState({ largeImage });
+    this.toggleModal();
+  };
+
+  fetchPictures = () => {
+    const { page, query } = this.state;
+    const options = {
+      page,
+      query,
+    };
+
+    this.setState({ isLoading: true });
+
+    ApiService(options)
+      .then((pictures) => {
+        this.setState((prevState) => ({
+          pictures: [...prevState.pictures, ...pictures],
+          page: prevState.page + 1,
+        }));
+      })
+      .catch((error) => this.setState({ error: "Picture not found" }))
+      .finally(() => this.setState({ isLoading: false }));
+  };
+
+  onChangeQwery = (query) => {
+    this.setState({ query: query, page: 1, pictures: [], error: null });
+  };
+
   render() {
-    const { hits, isLoading, showModal, url, tag } = this.state;
-    const shouldRenderLoadMoreButton = hits.length;
+    const { pictures, isLoading, error, showModal, largeImage, imgTags } =
+      this.state;
+
     return (
-      <div className={styles.Container}>
-        <Searchbar onSubmit={this.onChangeQuery} />
+      <div className={S.App}>
+        <SearchForm onSubmit={this.onChangeQwery} />
 
-        <ImageGallery hits={hits} onClick={this.handleImageClick} />
+        {error && <h1>{error}</h1>}
 
-        {isLoading && <GalleryLoader />}
-
-        {shouldRenderLoadMoreButton > 11 && <Button onClick={this.fetchHits} />}
+        <ImageGallery pictures={pictures} bigImage={this.bigImage} />
+        {isLoading && <Loader />}
+        {pictures.length > 11 && !isLoading && (
+          <Button onClick={this.fetchPictures} />
+        )}
 
         {showModal && (
-          <Modal onClose={this.toggleModal} onClick={this.handleImageClick}>
-            <img src={url} alt={tag} />
+          <Modal showModal={this.bigImage}>
+            <img src={largeImage} alt={imgTags} />
           </Modal>
         )}
       </div>
     );
   }
 }
+
+App.propTypes = {
+  pictures: PropTypes.array,
+  page: PropTypes.number,
+  query: PropTypes.string,
+  largeImage: PropTypes.string,
+  imgTags: PropTypes.string,
+  error: PropTypes.string,
+  showModal: PropTypes.bool,
+  isLoading: PropTypes.bool,
+};
 
 export default App;

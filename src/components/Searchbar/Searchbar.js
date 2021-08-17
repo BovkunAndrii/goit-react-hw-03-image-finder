@@ -1,38 +1,33 @@
-import React, { Component } from 'react';
+import { Component } from "react";
+import PropTypes from "prop-types";
+import S from "./Searchbar.module.css";
 
-import styles from '../Searchbar/searchbar.module.css';
+class SearchForm extends Component {
+  state = { qwery: "" };
 
-class Searchbar extends Component {
-  state = { query: '' };
-
-  handleChange = e => {
-    this.setState({
-      query: e.currentTarget.value,
-    });
+  handleChange = (e) => {
+    this.setState({ qwery: e.currentTarget.value });
   };
-
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
-    this.props.onSubmit(this.state.query);
-
-    this.setState({ query: '' });
+    this.props.onSubmit(this.state.qwery);
+    this.setState({ qwery: "" });
   };
 
   render() {
     return (
-      <header className={styles.Searchbar}>
-        <form className={styles.SearchForm} onSubmit={this.handleSubmit}>
-          <button type="submit" className={styles.SearchFormButton}>
-            <span className={styles.SearchFormButtonLabel}>Search</span>
+      <header className={S.Searchbar}>
+        <form className={S.SearchForm} onSubmit={this.handleSubmit}>
+          <button type="submit" className={S.SearchFormButton}>
+            <span className={S.SearchFormButtonLabel}>Search</span>
           </button>
 
           <input
-            className={styles.SearchFormInput}
+            className={S.SearchFormInput}
             type="text"
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
-            value={this.state.query}
             onChange={this.handleChange}
           />
         </form>
@@ -41,4 +36,8 @@ class Searchbar extends Component {
   }
 }
 
-export default Searchbar;
+SearchForm.propTypes = {
+  qwery: PropTypes.string,
+};
+
+export default SearchForm;

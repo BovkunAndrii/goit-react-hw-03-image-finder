@@ -1,8 +1,17 @@
-import React from 'react';
 import Loader from 'react-loader-spinner';
+import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
+import S from './Loader.module.css';
 
-const GalleryLoader = () => (
-  <Loader type="ThreeDots" color="#00BFFF" height={80} width={80} />
-);
+const loader = () => {
+  return (
+    <Loader
+      className={S.Loader}
+      type="ThreeDots"
+      color="#00BFFF"
+      height={80}
+      width={80}
+    />
+  );
+};
 
-export default GalleryLoader;
+export default loader;
